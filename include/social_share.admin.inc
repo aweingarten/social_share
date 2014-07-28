@@ -112,5 +112,12 @@ function social_share_admin_settings() {
     '#default_value' => variable_get('social_share_max_desc_length', 50),
   );
 
+  $form['social_share_fb_app_id'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Facebook Share Dialog: App ID'),
+    '#description'   => t('By default, this module uses a sharing feature that is unsupported by Facebook. By providing an App ID here, you will override the default sharing functionality with Facebook\'s newer <a href="https://developers.facebook.com/docs/sharing/reference/share-dialog">Share Dialog</a>, which is supported.  <br /><strong>Note:</strong> This means that you will also need to include <a href="https://developers.facebook.com/docs/web/webmasters/">Open Graph metatags</a>, like those provided by the <a href="https://www.drupal.org/project/metatag">metatag module</a>.'),
+    '#default_value' => variable_get('social_share_fb_app_id'),
+  );
+
   return system_settings_form($form);
 }

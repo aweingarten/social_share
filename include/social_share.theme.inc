@@ -25,6 +25,7 @@ function theme_social_share_links($variables) {
 
   $content = array();
   if ($block) {
+    $class = 'social-share-block';
     $settings = variable_get('social_share_block_settings', array());
     if (isset($settings['social_share_theme'])) {
       $theme_func = $settings['social_share_theme'];
@@ -42,6 +43,7 @@ function theme_social_share_links($variables) {
     }
   }
   else {
+    $class = 'social-share-node-' . $node->nid;
     if (variable_get('social_share_enabled_' . $node->type, 0)) {
       $networks = variable_get('social_share_networks_' . $node->type, array());
       $theme_func = variable_get('social_share_theme_' . $node->type, 'social_share_link');
@@ -55,7 +57,7 @@ function theme_social_share_links($variables) {
     }
   }
 
-  $content['#prefix'] = '<div class="social-share clearfix">';
+  $content['#prefix'] = '<div class="social-share ' . $class . ' clearfix">';
   $content['#suffix'] = '</div>';
 
   if (($block && isset($settings['social_share_show_label']) && $settings['social_share_show_label']) ||

@@ -129,6 +129,40 @@ function social_share_node_view($node, $view_mode, $language) {
 }
 
 /**
+ * Implements hook_preprocess_node().
+ */
+function social_share_preprocess_node(&$variables) {
+  // Apply a single listener to each facebook share link independently, overriding
+  // the previous share behavior.
+  $node_type = $variables['type'];
+  $node_url = $variables['node_url'];
+  $facebook_app_id = variable_get('social_share_fb_app_id', NULL);
+  $sharing_is_enabled = (bool) variable_get('social_share_enabled_' . $node_type, 0);
+  $social_networks = variable_get('social_share_networks_' . $node_type, array());
+  $facebook_link_is_enabled = in_array('facebook', $social_networks);
+
+  if (!empty($facebook_app_id) && $sharing_is_enabled && $facebook_link_is_enabled) {
+    $absolute_node_url = url(ltrim($node_url, '/'), array('absolute' => TRUE));
+    $selector = '.social-share-node-' . $variables['nid'] . ' .social-share-facebook';
+    $inline_js = _social_share_facebook_override_script($selector, $absolute_node_url);
+    drupal_add_js($inline_js, array('type' => 'inline'));
+  }
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function social_share_preprocess_page(&$variables) {
+  // Load the Facebook Javascript SDK if they have provided an App ID. It loads
+  // on every page, because it may be needed for blocks or nodes.
+  $facebook_app_id = variable_get('social_share_fb_app_id', NULL);
+  if (!empty($facebook_app_id)) {
+    drupal_add_js(array('socialShare' => array('appID' => $facebook_app_id)), 'setting');
+    drupal_add_js(drupal_get_path('module', 'social_share') . '/js/social_share_facebook_sdk.js', 'file');
+  }
+}
+
+/**
  * Implements hook_block_info().
  */
 function social_share_block_info() {
@@ -273,6 +307,21 @@ function social_share_block_view($delta = '') {
     $block['subject'] = t('Social Share');
     $block['content'] = theme('social_share_links', array('block' => TRUE));
   }
+
+  // If the App ID is provided, attach the listener to this block.
+  // See: https://api.drupal.org/comment/49223#comment-49223.
+  $facebook_app_id = variable_get('social_share_fb_app_id', NULL);
+  if (!empty($facebook_app_id)) {
+    $selector = '.social-share-block .social-share-facebook';
+    $inline_js = _social_share_facebook_override_script($selector);
+
+    $block['content']['#attached'] = array(
+      'js' => array(
+        $inline_js => array('type' => 'inline')
+      )
+    );
+  }
+
   return $block;
 }
 
@@ -502,4 +551,34 @@ function social_share_node_type_delete($info) {
   foreach ($settings as $setting) {
     variable_del($setting .'_'. $info->type);
   }
+}
+
+/**
+ * This listener overrides the default FB share url, using Share Dialog instead.
+ *
+ * @param string $selector
+ *   A DOM selector for targeting the facebook link.
+ * @param string $abs_url
+ *   The absolute URL you want to share via Facebook
+ *
+ * @return string
+ *   A string of inline javascript for the override.
+ */
+function _social_share_facebook_override_script($selector, $abs_url = NULL) {
+  // If no URL is passed, we use the current URL (as determed by Javascript's
+  // document.URL).
+  if ($abs_url) {
+    $abs_url = '"' . $abs_url . '"';
+  }
+  else {
+    $abs_url = 'document.URL';
+  }
+  $listener = 'jQuery(document).ready(function() { '
+            . '  jQuery("' . $selector . '").click(function(event) { '
+            . '    event.preventDefault(); '
+            . '    FB.ui({method: "share", href: ' . $abs_url . '}, function(response){}); '
+            . '  }); '
+            . '}); ';
+
+  return $listener;
 }
