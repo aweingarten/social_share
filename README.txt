@@ -25,6 +25,21 @@ Example:
 This facilitates styling the links as icons, or whatever best suits the site.
 
 
+Facebook Share Dialog
+=====================
+
+This version of the module allows you to override Facebook's default share popup and replacing it Facebook's Share Dialog. This is important because the legacy popup is deprecated, and unsupported by Facebook today.
+
+Share Dialog requires that you have a Facebook Application ID. For more details, see: https://developers.facebook.com/docs/sharing/reference/share-dialog.
+
+To enable Share Dialog:
+1. Ensure the Social Share module is enabled.
+2. Browse to `admin/config/content/social-share`
+3. Input your Facebook App ID into the corresponding field.
+4. Save the settings.
+
+With Share Dialog enabled, Facebook will use [Open Graph Metadata](http://ogp.me/) for populating the share information (Title, Description, etc.) instead of the values you define for Social Share in your content type. This means that in order to define the Facebook Share Dialog Title or Description, you'll need to embed Open Graph Meta Tags on your webpages. You can do this manually, or by using a contributed module, like the [Metatag](https://www.drupal.org/project/metatag) module.
+
 ICONS
 =======
 Beginning with the 2.x branch, an icon pack based on the GPL licensed social
