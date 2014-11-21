@@ -145,7 +145,7 @@ function theme_social_share_link($variables) {
 
   // urlencode replacement items:
   foreach($replacements as $k => $v) {
-    $replacements[$k] = rawurlencode($v);
+    $replacements[$k] = rawurlencode(decode_entities($v));
   }
 
   $link_options = array('attributes' => array('class' => 'social-share-'. str_replace('_', '-', $network['machine_name']), 'title' => $network['human_name']));
